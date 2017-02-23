@@ -1,3 +1,5 @@
+var LineWidgets = ace.require("ace/line_widgets").LineWidgets;
+
 $(document).ready(function(){
     HtmlacademyEditor.init();
 });
@@ -8,6 +10,8 @@ const HtmlacademyEditor = {
     refreshTimer: null,
     previewFrame: null,
     previewDocument: null,
+    toolTip: null,
+    tooltipContainer: null,
 
     init() {
         this.previewFrame = document.getElementById('preview');
@@ -49,7 +53,8 @@ const HtmlacademyEditor = {
       <a href='#'>Я ссылка</a>
     </div>
   </body>
-</html>`)
+</html>`);
+        editor.clearSelection();
     },
 
 
@@ -65,7 +70,7 @@ const HtmlacademyEditor = {
     },
 
     setCssEditorValue(editor) {
-        editor.setValue(`.active{ color: red}`)
+        editor.setValue(`.active{background:rgba(125, 200, 219, 0.5);transition:background .7s ease;}`)
     },
 
     initCommonEditorSettings(editor) {
@@ -84,20 +89,22 @@ const HtmlacademyEditor = {
         editor.getSession().setUseWrapMode(true);
         editor.getSession().setFoldStyle('manual');
         editor.getSession().setUseWorker(false);
-
         editor.renderer.setHScrollBarAlwaysVisible(false);
 
         editor.on('change', () => {
             clearTimeout(this.refreshTimer);
             this.refreshTimer = setTimeout(() => {
                 this.updatePreview()
-            }, 1000);
+            }, 100);
         });
 
         editor.on('click', (e) => {
             e.preventDefault();
             $('iframe#preview').contents().find('.active').removeClass('active');
-            this.selectInFrame();
+            this.hideToolTip(editor.session)
+            this.selectInFrame(editor);
+
+
         });
     },
 
@@ -130,23 +137,57 @@ const HtmlacademyEditor = {
     },
 
     injectCss(preview, cssCode) {
-        var styleElement = preview.createElement("style");
-        styleElement.type = "text/css";
+        const styleElement = preview.createElement('style');
+        styleElement.type = 'text/css';
 
         if (styleElement.styleSheet) {
             styleElement.styleSheet.cssText = cssCode;
         } else {
             styleElement.appendChild(preview.createTextNode(cssCode));
         }
-        preview.getElementsByTagName("head")[0].appendChild(styleElement);
+        preview.getElementsByTagName('head')[0].appendChild(styleElement);
     },
 
-    selectInFrame() {
-        let currentLine = this.htmleditor.getSelectionRange().start.row;
-        let currentLineValue = this.htmleditor.session.getLine(currentLine);
-        let match = /<(\w+)/.exec(currentLineValue);
+    selectInFrame(editor) {
+        const currentLine = editor.getSelectionRange().start.row;
+        const currentLineValue = editor.session.getLine(currentLine);
+        const match = /<(\w+)/.exec(currentLineValue);
+
         if (match !== null) {
             $('iframe#preview').contents().find(match[1]).addClass('active');
+            this.showToolTip(editor, match[1]);
+        }
+    },
+
+    showToolTip (editor, tag) {
+        let tooltipContainer = this.tooltipContainer;
+        const pos = editor.getCursorPosition();
+        const session = editor.session;
+
+        tooltipContainer = document.createElement('div');
+        tooltipContainer.classList.add("tooltip-answer");
+        tooltipContainer.innerHTML = tag;
+        setTimeout(() => {
+            tooltipContainer.classList.add("tooltip-answer__visible");
+        }, 50);
+
+        this.toolTip = {
+            row: pos.row,
+            el: tooltipContainer,
+            type: 'infoMarker'
+        };
+
+        if (!session.widgetManager) {
+            session.widgetManager = new LineWidgets(session);
+            session.widgetManager.attach(editor);
+        }
+        session.widgetManager.addLineWidget(this.toolTip);
+    },
+
+    hideToolTip(session) {
+        if (session.widgetManager) {
+            $(this.tooltipContainer).removeClass('tooltip-answer__visible');
+            session.widgetManager.removeLineWidget(this.toolTip);
         }
     },
 
@@ -159,6 +200,6 @@ const HtmlacademyEditor = {
         }
         $('.browser-container:first .tab:first').html('<div title="'+ title +'" class="title-container">' + title + '</div>');
     }
-}
+};
 
 

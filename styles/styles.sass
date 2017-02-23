@@ -1,6 +1,7 @@
 body
   margin: 0
   font-size: 13px
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif
   line-height: 18px
   color: #333
   background: #f5f5f5
@@ -10,6 +11,25 @@ body
     display: flex
   &__column
     width: 50%
+
+  .editor-container
+    width: auto
+    height: 99vh
+    margin: 0.5vh 2.5px 0 5px
+    position: relative
+
+    .label
+      position: absolute
+      z-index: 500
+      right: 10px
+      margin-top: 5px
+      border-radius: 3px
+      background-color: #3a87ad
+      padding: 2px 4px
+      font-size: 11.844px
+      font-weight: bold
+      line-height: 14px
+      color: #fff
 
   .browser__container
     background: #fff
@@ -25,6 +45,9 @@ body
       width: 100%
       border: none
 
+
+.shadow-box
+  box-shadow: 0 0 2px rgba(0,0,0,0.5)
 #html-editor
   margin-top: 0.5vh
   width: auto
@@ -32,3 +55,15 @@ body
 
 .active
   color: palegreen
+
+.tooltip-answer
+  height: 50px
+  padding: 4px 8px
+  background: rgba(59, 237, 255, 0.2)
+  transition: opacity 2s
+  width: 100%
+  opacity: 0
+
+.tooltip-answer__visible
+  opacity: 1
+
