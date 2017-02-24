@@ -18,7 +18,6 @@ const HtmlacademyEditor = {
         this.previewDocument = this.previewFrame.contentDocument || this.previewFrame.contentWindow.document;
         this.initHtmlEditor();
         this.initCssEditor();
-
         setTimeout(() => {
             this.updatePreview()
         }, 300);
@@ -57,8 +56,17 @@ const HtmlacademyEditor = {
         editor.clearSelection();
     },
 
-
-    initCssEditor: function() {
+    initToolTip() {
+        this.toolTip = {
+            el: document.createElement("div"),
+            type: 'infoMarker'
+        };
+        if (!session.widgetManager) {
+            session.widgetManager = new LineWidgets(session);
+            session.widgetManager.attach(editor);
+        }
+    },
+    initCssEditor() {
         if (!$('#css-editor').length) {
             return;
         }
@@ -103,8 +111,6 @@ const HtmlacademyEditor = {
             $('iframe#preview').contents().find('.active').removeClass('active');
             this.hideToolTip(editor.session)
             this.selectInFrame(editor);
-
-
         });
     },
 
@@ -166,7 +172,8 @@ const HtmlacademyEditor = {
 
         tooltipContainer = document.createElement('div');
         tooltipContainer.classList.add("tooltip-answer");
-        tooltipContainer.innerHTML = tag;
+        console.log(tooltipContainer)
+        this.setToolTipContent(tooltipContainer, tag, this.toolTip)
         setTimeout(() => {
             tooltipContainer.classList.add("tooltip-answer__visible");
         }, 50);
@@ -181,15 +188,29 @@ const HtmlacademyEditor = {
             session.widgetManager = new LineWidgets(session);
             session.widgetManager.attach(editor);
         }
-        session.widgetManager.addLineWidget(this.toolTip);
+       setTimeout(() => {
+                session.widgetManager.addLineWidget(this.toolTip)
+       }, 40)
+
     },
 
+    setToolTipContent(container, tag){
+        $.getJSON('htmlbook.json')
+            .then(data => {
+                container.innerHTML = data[tag].value;
+            })
+            .fail(() => {
+                container.innerHTML = 'Информация об этом тэге не найдена:(';
+            });
+    },
     hideToolTip(session) {
+        console.log(this.toolTip);
         if (session.widgetManager) {
             $(this.tooltipContainer).removeClass('tooltip-answer__visible');
             session.widgetManager.removeLineWidget(this.toolTip);
         }
     },
+
 
     updatePagetitle() {
         let title = $('title', this.previewDocument).text();
@@ -200,6 +221,9 @@ const HtmlacademyEditor = {
         }
         $('.browser-container:first .tab:first').html('<div title="'+ title +'" class="title-container">' + title + '</div>');
     }
+
+
+
 };
 
 

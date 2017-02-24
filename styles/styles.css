@@ -53,11 +53,9 @@ body {
   color: palegreen; }
 
 .tooltip-answer {
-  height: 50px;
-  padding: 4px 8px;
+  padding: 10px;
   background: rgba(59, 237, 255, 0.2);
   transition: opacity 2s;
-  width: 100%;
   opacity: 0; }
 
 .tooltip-answer__visible {
