@@ -1,5 +1,3 @@
-var LineWidgets = ace.require("ace/line_widgets").LineWidgets;
-
 $(document).ready(function(){
     HtmlacademyEditor.init();
 });
@@ -20,7 +18,7 @@ const HtmlacademyEditor = {
         this.initCssEditor();
         setTimeout(() => {
             this.updatePreview()
-        }, 300);
+        }, 1000);
     },
 
     initHtmlEditor() {
@@ -39,7 +37,7 @@ const HtmlacademyEditor = {
 <html lang="ru">
   <head>
     <meta charset="utf-8">
-    <title>Барбершоп «Бородинский»</title>
+    <title></title>
   </head>
   <body>
     <ul>
@@ -49,30 +47,22 @@ const HtmlacademyEditor = {
       <li>Все теги в редакторе на отдельной строке</li>
     </ul>
     <div>
-      <a href='#'>Я ссылка</a>
+      <a href='#'>Ссылка</a>
+      <p>Абзац</p>
+      <input placeholder="Дата">
     </div>
   </body>
 </html>`);
         editor.clearSelection();
     },
 
-    initToolTip() {
-        this.toolTip = {
-            el: document.createElement("div"),
-            type: 'infoMarker'
-        };
-        if (!session.widgetManager) {
-            session.widgetManager = new LineWidgets(session);
-            session.widgetManager.attach(editor);
-        }
-    },
     initCssEditor() {
         if (!$('#css-editor').length) {
             return;
         }
 
-        this.csseditor = ace.edit("css-editor");
-        this.csseditor.getSession().setMode("ace/mode/css");
+        this.csseditor = ace.edit('css-editor');
+        this.csseditor.getSession().setMode('ace/mode/css');
         this.initCommonEditorSettings(this.csseditor);
         this.setCssEditorValue(this.csseditor);
     },
@@ -90,7 +80,7 @@ const HtmlacademyEditor = {
         editor.setBehavioursEnabled(false);
         editor.setFadeFoldWidgets(false);
 
-        if (-1 !== location.href.indexOf("bigfont")) {
+        if (-1 !== location.href.indexOf('bigfont')) {
             editor.setFontSize('16px');
         }
 
@@ -109,13 +99,17 @@ const HtmlacademyEditor = {
         editor.on('click', (e) => {
             e.preventDefault();
             $('iframe#preview').contents().find('.active').removeClass('active');
-            this.hideToolTip(editor.session)
-            this.selectInFrame(editor);
+
+            if ($(e.target).closest('.tooltip-info').length == 0)  {
+                this.hideToolTip(editor.session);
+            }
+
+            this.selectInPreview(editor);
         });
     },
 
     updatePreview() {
-        let previewWindow = this.previewFrame.contentWindow;
+        const previewWindow = this.previewFrame.contentWindow;
         let scrollLeft,
             scrollTop;
 
@@ -133,7 +127,7 @@ const HtmlacademyEditor = {
         });
 
         if (this.csseditor) {
-            let cssCode = this.csseditor.getSession().getValue();
+            const cssCode = this.csseditor.getSession().getValue();
             this.injectCss(this.previewDocument, cssCode);
         }
 
@@ -154,7 +148,7 @@ const HtmlacademyEditor = {
         preview.getElementsByTagName('head')[0].appendChild(styleElement);
     },
 
-    selectInFrame(editor) {
+    selectInPreview(editor) {
         const currentLine = editor.getSelectionRange().start.row;
         const currentLineValue = editor.session.getLine(currentLine);
         const match = /<(\w+)/.exec(currentLineValue);
@@ -167,27 +161,30 @@ const HtmlacademyEditor = {
 
     showToolTip (editor, tag) {
         let tooltipContainer = this.tooltipContainer;
-        const pos = editor.getCursorPosition();
+        const LineWidgets = ace.require('ace/line_widgets').LineWidgets;
+        const row = editor.getCursorPosition().row;
         const session = editor.session;
 
         tooltipContainer = document.createElement('div');
-        tooltipContainer.classList.add("tooltip-answer");
-        console.log(tooltipContainer)
-        this.setToolTipContent(tooltipContainer, tag, this.toolTip)
+        tooltipContainer.classList.add('tooltip-info');
+
         setTimeout(() => {
-            tooltipContainer.classList.add("tooltip-answer__visible");
+            tooltipContainer.classList.add('tooltip-info__visible');
         }, 50);
 
+        this.setToolTipContent(tooltipContainer, tag);
         this.toolTip = {
-            row: pos.row,
+            row: row,
             el: tooltipContainer,
-            type: 'infoMarker'
+            type: 'infoMarker',
+            fixedWidth:!0
         };
 
         if (!session.widgetManager) {
             session.widgetManager = new LineWidgets(session);
             session.widgetManager.attach(editor);
         }
+
        setTimeout(() => {
                 session.widgetManager.addLineWidget(this.toolTip)
        }, 40)
@@ -203,14 +200,13 @@ const HtmlacademyEditor = {
                 container.innerHTML = 'Информация об этом тэге не найдена:(';
             });
     },
+
     hideToolTip(session) {
-        console.log(this.toolTip);
         if (session.widgetManager) {
-            $(this.tooltipContainer).removeClass('tooltip-answer__visible');
+            $('.tooltip-info').removeClass('tooltip-info__visible');
             session.widgetManager.removeLineWidget(this.toolTip);
         }
     },
-
 
     updatePagetitle() {
         let title = $('title', this.previewDocument).text();
@@ -219,10 +215,8 @@ const HtmlacademyEditor = {
         } else {
             title = title + ' — HTML Academy';
         }
-        $('.browser-container:first .tab:first').html('<div title="'+ title +'" class="title-container">' + title + '</div>');
+        $('.browser__container:first .tab:first').html('<div title="'+ title +'" class="title__container">' + title + '</div>');
     }
-
-
 
 };
 

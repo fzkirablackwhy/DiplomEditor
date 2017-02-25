@@ -1,15 +1,19 @@
 {
-  "name": "diplom",
+  "name": "diplom-html-academy",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "jquery": "^3.1.1"
+    "jquery": "^3.1.1",
+    "node-static": "^0.7.9"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Lashina Irina",
-  "license": "ISC"
+  "license": "ISC",
+  "scripts": {
+    "start": "node server.js"
+  }
 }
