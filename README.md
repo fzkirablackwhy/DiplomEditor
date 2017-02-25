@@ -10,3 +10,9 @@ npm install
 ### Start local development server
 ```
 npm start
+```
+
+Now open a browser and visit 
+```
+http://localhost:8080
+```
