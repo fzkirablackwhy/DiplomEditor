@@ -4,6 +4,6 @@ const file = new static.Server('.');
 
 http.createServer(function(req, res) {
     file.serve(req, res);
-}).listen(8380);
+}).listen(8080);
 
-console.log('Server running on port 3080');
+console.log('Server running on port 8080');
