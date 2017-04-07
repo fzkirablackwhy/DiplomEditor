@@ -1,0 +1,4 @@
+.active{
+    background:rgba(125, 200, 219, 0.5);
+    transition:background .7s ease;
+}

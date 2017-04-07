@@ -64,7 +64,7 @@ const HtmlacademyEditor = {
         this.csseditor = ace.edit('css-editor');
         this.csseditor.getSession().setMode('ace/mode/css');
         this.initCommonEditorSettings(this.csseditor);
-        this.setCssEditorValue(this.csseditor);
+        // this.setCssEditorValue(this.csseditor);
     },
 
     setCssEditorValue(editor) {
@@ -126,11 +126,16 @@ const HtmlacademyEditor = {
             return false;
         });
 
-        if (this.csseditor) {
-            const cssCode = this.csseditor.getSession().getValue();
-            this.injectCss(this.previewDocument, cssCode);
-        }
+        // setting initials styles to preview
+        let init_styles = document.createElement('link');
+        init_styles.rel = 'stylesheet';
+        init_styles.href = 'styles/preview.css'
+        this.previewDocument.getElementsByTagName('head')[0].appendChild(init_styles);
 
+        // if (this.csseditor) {
+        //     const cssCode = this.csseditor.getSession().getValue();
+        //     this.injectCss(this.previewDocument, cssCode);
+        // }
         previewWindow.scrollTo(scrollLeft, scrollTop);
 
         this.updatePagetitle();
@@ -151,6 +156,8 @@ const HtmlacademyEditor = {
     selectInPreview(editor) {
         const currentLine = editor.getSelectionRange().start.row;
         const currentLineValue = editor.session.getLine(currentLine);
+        console.log(currentLine)
+        console.log(currentLineValue);
         const match = /<(\w+)/.exec(currentLineValue);
 
         if (match !== null) {
