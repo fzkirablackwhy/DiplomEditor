@@ -79,6 +79,7 @@ const HtmlacademyEditor = {
         editor.setHighlightSelectedWord(false);
         editor.setBehavioursEnabled(false);
         editor.setFadeFoldWidgets(false);
+        editor.setReadOnly(true);
 
         if (-1 !== location.href.indexOf('bigfont')) {
             editor.setFontSize('16px');
@@ -156,13 +157,11 @@ const HtmlacademyEditor = {
     selectInPreview(editor) {
         const currentLine = editor.getSelectionRange().start.row;
         const currentLineValue = editor.session.getLine(currentLine);
-        console.log(currentLine)
-        console.log(currentLineValue);
         const match = /<(\w+)/.exec(currentLineValue);
 
         if (match !== null) {
             $('iframe#preview').contents().find(match[1]).addClass('active');
-            this.showToolTip(editor, match[1]);
+            this.showToolTip(editor, currentLine);
         }
     },
 
@@ -200,11 +199,15 @@ const HtmlacademyEditor = {
 
     setToolTipContent(container, tag){
         $.getJSON('htmlbook.json')
-            .then(data => {
-                container.innerHTML = data[tag].value;
+            .done(data => {
+                if (data[tag] && data[tag].hasOwnProperty('value')) {
+                        container.innerHTML = data[tag].value;
+                } else {
+                    container.innerHTML = 'Информация об этом тэге не найдена:(';
+                }
             })
             .fail(() => {
-                container.innerHTML = 'Информация об этом тэге не найдена:(';
+                container.innerHTML = 'Ошибка доступа к базе';
             });
     },
 
