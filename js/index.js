@@ -33,26 +33,166 @@ const HtmlacademyEditor = {
     },
 
     setHtmlEditorValue(editor) {
+        // Исходный код разметки стоит вынести в папку проекта
+        // Также в папку проекта стоит вынести описания
         editor.setValue(`<!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>Барбершоп «Бородинский»</title>
+    <base href="/projects/barbershop/">
+    <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
-    <ul>
-    Щелкнув на любой строке редактора (где есть открывающий тег)
-      <li>Тег выделится во втором окне визуально</li>
-      <li>Внутри редактора под этой строкой появится текстовая подсказка</li>
-      <li>Все теги в редакторе на отдельной строке</li>
-    </ul>
-    <div>
-      <a href='#'>Ссылка</a>
-      <p>Абзац</p>
-      <input placeholder="Дата">
-    </div>
+    <header class="main-header">
+      <h1>
+        <span class="visually-hidden">Барбершоп «Бородинский»<br></span>
+        <img src="img/index-logo.png" width="368" height="204" alt="">
+      </h1>
+      <nav class="main-navigation">
+        <ul class="site-navigation">
+          <li>
+            <a href="info.html">Информация</a>
+          </li>
+          <li>
+            <a href="news.html">Новости</a>
+          </li>
+          <li>
+            <a href="price.html">Прайс-лист</a>
+          </li>
+          <li>
+            <a href="catalog.html">Магазин</a>
+          </li>
+          <li>
+            <a href="contacts.html">Контакты</a>
+          </li>
+        </ul>
+
+        <ul class="user-navigation">
+          <li>
+            <a class="login-link" href="login.html">Вход</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section class="features">
+        <h2 class="visually-hidden">Преимущества</h2>
+        <ul class="features-list">
+          <li class="feature">
+            <h3 class="feature-name">Быстро</h3>
+            <p>Мы делаем свою работу быстро! Два часа пролетят незаметно и вы — счастливый обладатель стильной стрижки-минутки!</p>
+          </li>
+          <li class="feature">
+            <h3 class="feature-name">Круто</h3>
+            <p>Забудьте, как вы стриглись раньше. Мы сделаем из вас звезду футбола или кино! Во всяком случае внешне.</p>
+          </li>
+          <li class="feature">
+            <h3 class="feature-name">Дорого</h3>
+            <p>Наши мастера — профессионалы своего дела и не могут стоить дешево. К тому же, разве цена не дает определенный статус?</p>
+          </li>
+        </ul>
+      </section>
+
+      <div class="index-columns">
+        <section class="news">
+          <h2 class="news-title">Новости</h2>
+          <ul class="news-preview">
+            <li>
+              <p>Нам наконец завезли Ягермайстер! Теперь вы можете пропустить стаканчик во время стрижки</p>
+              <time datetime="2016-01-11">11 января</time>
+            </li>
+            <li>
+              <p>В нашей команде пополнение, Борис «Бритва» Стригунец, обладатель множества титулов и наград пополнил наши стройные ряды</p>
+              <time datetime="2016-01-18">18 января</time>
+            </li>
+          </ul>
+          <a class="btn" href="news.html">Все новости</a>
+        </section>
+
+        <section class="gallery">
+          <h2 class="gallery-title">Фотогалерея</h2>
+          <figure class="gallery-content">
+            <a href="#"><img src="img/photo-1.jpg" width="286" height="164" alt="Интерьер"></a>
+            <a href="#"><img src="img/photo-2.jpg" width="286" height="164" alt="Кресло для бритья"></a>
+          </figure>
+        </section>
+      </div>
+
+      <div class="index-columns">
+        <section class="contacts">
+          <h2 class="contacts-title">Контактная информация</h2>
+          <p>
+            Барбершоп «Бородинский»<br>
+            Адрес: г. Санкт-Петербург, Б. Конюшенная, д. 19/8<br>
+            Телефон: +7 (812) 666-02-66
+          </p>
+          <p>
+            Время работы:<br>
+            пн — пт: с 10:00 до 22:00<br>
+            сб — вс: с 10:00 до 19:00
+          </p>
+          <a class="btn" href="map.html">Как проехать</a>
+          <a class="btn" href="contacts.html">Обратная связь</a>
+        </section>
+
+        <section class="appointment">
+          <h2 class="appointment-title">Записаться</h2>
+          <p>Укажите желаемую дату и время и мы свяжемся с вами для подтверждения брони</p>
+          <form class="appointment-form" action="https://echo.htmlacademy.ru" method="post">
+            <p>
+              <label for="appointment-date-field">Дата</label>
+              <input id="appointment-date-field" type="text" name="date" value="" placeholder="Дата">
+            </p>
+            <p>
+              <label for="appointment-time-field">Время</label>
+              <input id="appointment-time-field" type="text" name="time" value="" placeholder="Время">
+            </p>
+            <p>
+              <label for="appointment-name-field">Ваше имя</label>
+              <input id="appointment-name-field" type="text" name="name" value="" placeholder="Ваше имя">
+            </p>
+            <p>
+              <label for="appointment-phone-field">Телефон</label>
+              <input id="appointment-phone-field" type="tel" name="phone" value="" placeholder="Телефон">
+            </p>
+            <p>
+              <button class="btn" type="submit">Отправить</button>
+            </p>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <footer class="main-footer">
+      <div class="footer-columns">
+        <p class="footer-contacts">
+          Барбершоп «Бородинский»<br>
+          Адрес: г. Санкт-Петербург, Б. Конюшенная, д. 19/8<br>
+          <a href="map.html">Как нас найти?</a><br>
+          Телефон: +7 (812) 666-02-66
+        </p>
+        <p class="footer-social">
+          <b>Давайте дружить!</b>
+          <span class="visually-hidden">Подписывайтесь на нас в соцсетях:</span>
+          <a class="social-btn social-btn-vk" href="#">Вконтакте</a><span class="visually-hidden">,</span>
+          <a class="social-btn social-btn-fb" href="#">Фейсбук</a><span class="visually-hidden">,</span>
+          <a class="social-btn social-btn-inst" href="#">Инстаграм</a>
+        </p>
+        <p class="footer-copyright">
+          <b>Разработано:</b> <a class="btn" href="https://htmlacademy.ru">HTML Academy</a>
+        </p>
+      </div>
+    </footer>
+
+    <section class="login" id="login">
+      <h2 class="login-title">Личный кабинет</h2>
+      <p>Здесь будет форма.</p>
+    </section>
   </body>
-</html>`);
+</html>
+`);
         editor.clearSelection();
     },
 
@@ -198,7 +338,7 @@ const HtmlacademyEditor = {
     },
 
     setToolTipContent(container, tag){
-        $.getJSON('htmlbook.json')
+        $.getJSON('htmlbook.json?' + Math.random())
             .done(data => {
                 if (data[tag] && data[tag].hasOwnProperty('value')) {
                         container.innerHTML = data[tag].value;
@@ -229,5 +369,3 @@ const HtmlacademyEditor = {
     }
 
 };
-
-
