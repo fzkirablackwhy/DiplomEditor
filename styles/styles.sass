@@ -21,7 +21,7 @@ body
     .label
       position: absolute
       z-index: 500
-      right: 10px
+      right: 20px
       margin-top: 5px
       border-radius: 3px
       background-color: #3a87ad
@@ -34,6 +34,7 @@ body
   .browser__container
     background: #fff
     width: auto
+    position: relative
     height: 99vh
     margin: 0.5vh 5px 0 2.5px
     box-sizing: border-box
@@ -70,10 +71,47 @@ body
       .title__container
         white-space: nowrap
         overflow: hidden
+
+    .browser-zoom
+      position: absolute
+      top: -25px
+      right: 10px
+      &-toggle
+        display: inline-block
+        padding: 1px 5px
+        font-size: 10px
+        line-height: 14px
+        background: #f5f5f5
+        border-radius: 3px
+        cursor: pointer
+        &-active
+          background: #ccc
     iframe
       height: 100%
       width: 100%
       border: none
+  .browser-zoomer
+    position: absolute
+    left: 0
+    top: 0
+    width: 100%
+    height: 100%
+    background: white
+    transform-origin: 0 0
+    overflow: hidden
+  .browser-zoom
+    &-50 .browser-zoomer
+      width: 200%
+      height: 200%
+      transform: scale(.5)
+    &-75 .browser-zoomer
+      width: 133.333%
+      height: 133.333%
+      transform: scale(.75)
+    &-150 .browser-zoomer
+      width: 66.666%
+      height: 66.666%
+      transform: scale(1.5)
 
 .shadow-box
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.5)
