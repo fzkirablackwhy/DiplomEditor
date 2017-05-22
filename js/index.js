@@ -85,7 +85,7 @@ const HtmlacademyEditor = {
 
         editor.on('click', (e) => {
             e.preventDefault();
-            $('iframe#preview').contents().find('.active').removeClass('active__frame-item');
+            $('iframe#preview').contents().find('.active__frame-item').removeClass('active__frame-item');
 
             if ($(e.target).closest('.tooltip-info').length == 0)  {
                 this.hideToolTip(editor.session);
@@ -137,11 +137,21 @@ const HtmlacademyEditor = {
     selectInPreview(editor) {
         const currentLine = editor.getSelectionRange().start.row + 1;
         const currentLineValue = editor.session.getLine(currentLine - 1);
-        const match = /<(\w+)/.exec(currentLineValue);
-        if (match !== null) {
-            $('iframe#preview').contents().find(match[1]).addClass('active__frame-item');
+        const matchTag = /<(\w+)/.exec(currentLineValue);
+        // const matchClass = /<(?:.*?)class="(.*?)"(?:.*?)>/.exec(currentLineValue)
+        // console.log(matchClass[1])
+        if (matchTag !== null) {
+            $('iframe#preview').contents().find(matchTag[1]).addClass('active__frame-item');
+            // this.scrollInPreview(matchClass[1])
             this.showToolTip(editor, currentLine);
         }
+    },
+
+    scrollInPreview(matchTag) {
+        console.log(matchTag)
+        const tag = $('iframe#preview').contents().find(`.${matchTag}`);
+        window.scrollTo(tag.offsetLeft,tag.offsetTop)
+        console.log(tag)
     },
 
     showToolTip (editor, tag) {
@@ -223,7 +233,7 @@ const DemoController = {
     },
 
     switchZoom(zoom) {
-        $('.browser-zoom-toggle').each(() => {
+        $('.browser-zoom-toggle').each(function() {
             $('.browser__container').removeClass('browser-zoom-' + $(this).data().zoom);
         });
         $('.browser__container').addClass('browser-zoom-' + zoom);
