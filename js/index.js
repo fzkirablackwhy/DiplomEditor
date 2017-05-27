@@ -18,7 +18,7 @@ const HtmlacademyEditor = {
         this.initHtmlEditor();
         this.initCssEditor();
         setTimeout(() => {
-            this.updatePreview()
+            this.updatePreview(this.htmleditor)
         }, 1000);
     },
 
@@ -83,6 +83,7 @@ const HtmlacademyEditor = {
             }, 100);
         });
 
+
         editor.on('click', (e) => {
             e.preventDefault();
             $('iframe#preview').contents().find('.active__frame-item').removeClass('active__frame-item');
@@ -91,7 +92,7 @@ const HtmlacademyEditor = {
                 this.hideToolTip(editor.session);
             }
 
-            this.selectInPreview(editor);
+            this.selectInPreview(e, editor);
         });
     },
 
@@ -103,6 +104,21 @@ const HtmlacademyEditor = {
         if (previewWindow) {
             scrollLeft = previewWindow.pageXOffset;
             scrollTop = previewWindow.pageYOffset;
+
+            const currentLine = this.htmleditor.getSelectionRange().start.row + 1;
+            const currentLineValue = this.htmleditor.session.getLine(currentLine - 1);
+            let editorValue = this.htmleditor.getSession().getValue();
+            const matchTag = /<(\w+)/.exec(currentLineValue);
+
+            // const matchClass = /<(?:.*?)class="(.*?)"(?:.*?)>/.exec(currentLineValue)
+            // console.log(matchClass[1])
+            if (matchTag !== null) {
+                let newArr = [];
+                console.log('1')
+                newArr.push({'line': currentLine, 'tag': matchTag})
+                newArr.forEach((el, ix) => el.id=ix)
+                console.log(newArr)
+            }
         }
 
         this.previewDocument.open();
@@ -134,17 +150,20 @@ const HtmlacademyEditor = {
         preview.getElementsByTagName('head')[0].appendChild(styleElement);
     },
 
-    selectInPreview(editor) {
+    selectInPreview(e, editor) {
+        let newArr = [];
         const currentLine = editor.getSelectionRange().start.row + 1;
         const currentLineValue = editor.session.getLine(currentLine - 1);
         const matchTag = /<(\w+)/.exec(currentLineValue);
         // const matchClass = /<(?:.*?)class="(.*?)"(?:.*?)>/.exec(currentLineValue)
         // console.log(matchClass[1])
         if (matchTag !== null) {
-            $('iframe#preview').contents().find(matchTag[1]).addClass('active__frame-item');
-            // this.scrollInPreview(matchClass[1])
-            this.showToolTip(editor, currentLine);
+            console.log('1')
+            newArr.push({'line': currentLine, 'tag': matchTag[1]})
+            newArr.forEach((el, ix) => el.id=ix)
+            console.log(newArr)
         }
+        console.log(e)
     },
 
     scrollInPreview(matchTag) {
