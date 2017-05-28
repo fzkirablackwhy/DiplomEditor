@@ -10,6 +10,7 @@ const HtmlacademyEditor = {
     previewFrame: null,
     previewDocument: null,
     toolTip: null,
+    linesWithTag: [],
     tooltipContainer: null,
 
     init() {
@@ -37,8 +38,8 @@ const HtmlacademyEditor = {
         // const fileUrl = $('#preview')[0].src;
         $.get('projects/barbershop/index.html?' + Math.random())
             .then((data) => {
-            editor.setValue(data);
-            editor.clearSelection();
+                editor.setValue(data);
+                editor.clearSelection();
         })
     },
 
@@ -76,12 +77,12 @@ const HtmlacademyEditor = {
         editor.getSession().setUseWorker(false);
         editor.renderer.setHScrollBarAlwaysVisible(false);
 
-        editor.on('change', () => {
-            clearTimeout(this.refreshTimer);
-            this.refreshTimer = setTimeout(() => {
-                this.updatePreview()
-            }, 100);
-        });
+        // editor.on('change', () => {
+        //     clearTimeout(this.refreshTimer);
+        //     this.refreshTimer = setTimeout(() => {
+        //         this.updatePreview()
+        //     }, 100);
+        // });
 
         editor.on('click', (e) => {
             e.preventDefault();
@@ -103,55 +104,62 @@ const HtmlacademyEditor = {
         if (previewWindow) {
             scrollLeft = previewWindow.pageXOffset;
             scrollTop = previewWindow.pageYOffset;
-        }
-
-        this.previewDocument.open();
-        this.previewDocument.write(this.htmleditor.getSession().getValue());
-        this.previewDocument.close();
+        };
 
         $('form', this.previewDocument).submit(function(){
             return false;
         });
-
-        if (this.csseditor) {
-            const cssCode = this.csseditor.getSession().getValue();
-            this.injectCss(this.previewDocument, cssCode);
+        if (this.htmleditor) {
+            const htmlCode = this.htmleditor.session.getDocument().$lines;
+            this.transformEditorValue(this.previewDocument, htmlCode)
         }
-        previewWindow.scrollTo(scrollLeft, scrollTop);
 
+        previewWindow.scrollTo(scrollLeft, scrollTop);
         this.updatePagetitle();
     },
 
-    injectCss(preview, cssCode) {
-        const styleElement = preview.createElement('style');
-        styleElement.type = 'text/css';
+    transformEditorValue(preview, htmlCode) {
+        const transformHtmlCode = htmlCode.map((line, idx) => {
+            const regEx = /(<\w+)(.*)/;
 
-        if (styleElement.styleSheet) {
-            styleElement.styleSheet.cssText = cssCode;
-        } else {
-            styleElement.appendChild(preview.createTextNode(cssCode));
-        }
-        preview.getElementsByTagName('head')[0].appendChild(styleElement);
+            if (regEx.test(line) && line) {
+                this.linesWithTag.push({
+                    lineValue: line,
+                    id: idx
+                });
+                const matchLine = regEx.exec(line);
+                // adding ids to every line with tags
+                line = `${matchLine[1]} id="${idx}"${matchLine[2]}`;
+            }
+            return line;
+        });
+
+        preview.open();
+        preview.write(transformHtmlCode.join(''));
+        preview.close();
     },
 
     selectInPreview(editor) {
-        const currentLine = editor.getSelectionRange().start.row + 1;
-        const currentLineValue = editor.session.getLine(currentLine - 1);
-        const matchTag = /<(\w+)/.exec(currentLineValue);
-        // const matchClass = /<(?:.*?)class="(.*?)"(?:.*?)>/.exec(currentLineValue)
-        // console.log(matchClass[1])
-        if (matchTag !== null) {
-            $('iframe#preview').contents().find(matchTag[1]).addClass('active__frame-item');
-            // this.scrollInPreview(matchClass[1])
-            this.showToolTip(editor, currentLine);
-        }
+        const currentLine = editor.getSelectionRange().start.row;
+        this.linesWithTag.map(line => {
+            const { id } = line;
+                // `#${idx}`
+            if (id === currentLine) {
+                console.log(currentLine, id)
+                this.showToolTip(editor, currentLine+1);
+                const targetElement = $('iframe#preview').contents().find( `#${id}`)
+                console.log($('iframe#preview').contents().find( `#${id}`))
+                var position = targetElement.position();
+                console.log(position)
+                targetElement.css({"background": "red"})
+                return false;
+            }
+        })
     },
 
     scrollInPreview(matchTag) {
-        console.log(matchTag)
         const tag = $('iframe#preview').contents().find(`.${matchTag}`);
         window.scrollTo(tag.offsetLeft,tag.offsetTop)
-        console.log(tag)
     },
 
     showToolTip (editor, tag) {
