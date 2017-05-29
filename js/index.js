@@ -148,8 +148,9 @@ const HtmlacademyEditor = {
         const { top, left } = position;
         const styles = {
             position : "absolute",
-            top: top || 0,
+            top: top,
             left: left,
+            zIndex: 5,
             opacity: 0,
             width: width,
             height: height,
@@ -188,7 +189,7 @@ const HtmlacademyEditor = {
             }
         })
     },
-    
+
     showToolTip (editor, tag) {
         let tooltipContainer = this.tooltipContainer;
         const LineWidgets = ace.require('ace/line_widgets').LineWidgets;
