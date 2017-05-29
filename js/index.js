@@ -86,18 +86,17 @@ const HtmlacademyEditor = {
 
         editor.on('click', (e) => {
             e.preventDefault();
-            $('iframe#preview').contents().find('.active__frame-item').removeClass('active__frame-item');
-
+            $(this.previewFrame).contents().find('div.active-selection').remove();
             if ($(e.target).closest('.tooltip-info').length == 0)  {
                 this.hideToolTip(editor.session);
             }
-
             this.selectInPreview(editor);
         });
     },
 
     updatePreview() {
         const previewWindow = this.previewFrame.contentWindow;
+
         let scrollLeft,
             scrollTop;
 
@@ -139,29 +138,57 @@ const HtmlacademyEditor = {
         preview.close();
     },
 
+    getElementCoordinates(element) {
+        const margin = element.css('margin');
+        const padding = element.css('padding');
+        const position = element.position();
+        const width = element.width();
+        const height = element.height();
+        const layer = document.createElement('div');
+        const { top, left } = position;
+        const styles = {
+            position : "absolute",
+            top: top || 0,
+            left: left,
+            opacity: 0,
+            width: width,
+            height: height,
+            margin: margin,
+            padding: padding,
+            background: 'rgba(114,57,213, 0.4)',
+            transition: 'background .7s ease'
+        };
+
+        $(layer).css(styles);
+        $(layer).toggleClass('active-selection')
+        $(element).parent().prepend(layer);
+        $(layer).animate({
+            opacity: 1
+        }, 700 );
+    },
+
+    scrollToElement(preview, el) {
+        $(preview).contents().find('body').animate({
+            scrollTop: el.offset().top,
+            scrollLeft: el.offset().left
+        }, 1500);
+    },
+
     selectInPreview(editor) {
+        const preview = this.previewFrame;
         const currentLine = editor.getSelectionRange().start.row;
         this.linesWithTag.map(line => {
             const { id } = line;
-                // `#${idx}`
             if (id === currentLine) {
-                console.log(currentLine, id)
+                const targetElement = $(preview).contents().find( `#${id}`)
+
                 this.showToolTip(editor, currentLine+1);
-                const targetElement = $('iframe#preview').contents().find( `#${id}`)
-                console.log($('iframe#preview').contents().find( `#${id}`))
-                var position = targetElement.position();
-                console.log(position)
-                targetElement.css({"background": "red"})
-                return false;
+                this.getElementCoordinates(targetElement);
+                this.scrollToElement(preview, targetElement);
             }
         })
     },
-
-    scrollInPreview(matchTag) {
-        const tag = $('iframe#preview').contents().find(`.${matchTag}`);
-        window.scrollTo(tag.offsetLeft,tag.offsetTop)
-    },
-
+    
     showToolTip (editor, tag) {
         let tooltipContainer = this.tooltipContainer;
         const LineWidgets = ace.require('ace/line_widgets').LineWidgets;
