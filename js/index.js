@@ -12,12 +12,12 @@ const HtmlacademyEditor = {
     toolTip: null,
     linesWithTag: [],
     tooltipContainer: null,
+    targetElement: null,
 
     init() {
         this.previewFrame = document.getElementById('preview');
         this.previewDocument = this.previewFrame.contentDocument || this.previewFrame.contentWindow.document;
         this.initHtmlEditor();
-        this.initCssEditor();
         setTimeout(() => {
             this.updatePreview()
         }, 1000);
@@ -32,30 +32,6 @@ const HtmlacademyEditor = {
         this.htmleditor.getSession().setMode('ace/mode/html');
         this.initCommonEditorSettings(this.htmleditor);
         this.setHtmlEditorValue(this.htmleditor);
-    },
-
-    setHtmlEditorValue(editor) {
-        // const fileUrl = $('#preview')[0].src;
-        $.get('projects/barbershop/index.html?' + Math.random())
-            .then((data) => {
-                editor.setValue(data);
-                editor.clearSelection();
-        })
-    },
-
-    initCssEditor() {
-        if (!$('#css-editor').length) {
-            return;
-        }
-
-        this.csseditor = ace.edit('css-editor');
-        this.csseditor.getSession().setMode('ace/mode/css');
-        this.initCommonEditorSettings(this.csseditor);
-        this.setCssEditorValue(this.csseditor);
-    },
-
-    setCssEditorValue(editor) {
-        editor.setValue(`.active__frame-item{background:rgba(125, 200, 219, 0.5);transition:background .7s ease;}`)
     },
 
     initCommonEditorSettings(editor) {
@@ -77,21 +53,43 @@ const HtmlacademyEditor = {
         editor.getSession().setUseWorker(false);
         editor.renderer.setHScrollBarAlwaysVisible(false);
 
-        // editor.on('change', () => {
-        //     clearTimeout(this.refreshTimer);
-        //     this.refreshTimer = setTimeout(() => {
-        //         this.updatePreview()
-        //     }, 100);
-        // });
-
         editor.on('click', (e) => {
             e.preventDefault();
             $(this.previewFrame).contents().find('div.active-selection').remove();
-            if ($(e.target).closest('.tooltip-info').length == 0)  {
+            if ($(e.target).closest('.tooltip-info')){
                 this.hideToolTip(editor.session);
             }
             this.selectInPreview(editor);
         });
+    },
+
+    setHtmlEditorValue(editor) {
+        $.get('projects/barbershop/index.html?' + Math.random())
+            .then((data) => {
+                editor.setValue(data);
+                editor.clearSelection();
+        })
+    },
+
+    transformEditorValue(preview, htmlCode) {
+        const transformHtmlCode = htmlCode.map((line, idx) => {
+            const regEx = /(<\w+)(.*)|(<!DOCTYPE)/;
+            const notDomEl = /(<html)|(<!DOCTYPE)/i;
+            if (regEx.test(line) && line) {
+                this.linesWithTag.push({
+                    lineValue: line,
+                    id: idx
+                });
+                const matchLine = regEx.exec(line);
+                // adding ids to every line with tags and execute not DOM el-s
+                notDomEl.test(line) ? line : line = `${matchLine[1]} id="${idx}"${matchLine[2]}`;
+            }
+            return line;
+        });
+
+        preview.open();
+        preview.write(transformHtmlCode.join(''));
+        preview.close();
     },
 
     updatePreview() {
@@ -103,11 +101,11 @@ const HtmlacademyEditor = {
         if (previewWindow) {
             scrollLeft = previewWindow.pageXOffset;
             scrollTop = previewWindow.pageYOffset;
-        };
-
+        }
         $('form', this.previewDocument).submit(function(){
             return false;
         });
+
         if (this.htmleditor) {
             const htmlCode = this.htmleditor.session.getDocument().$lines;
             this.transformEditorValue(this.previewDocument, htmlCode)
@@ -117,25 +115,42 @@ const HtmlacademyEditor = {
         this.updatePagetitle();
     },
 
-    transformEditorValue(preview, htmlCode) {
-        const transformHtmlCode = htmlCode.map((line, idx) => {
-            const regEx = /(<\w+)(.*)/;
+    selectInPreview(editor) {
+        const preview = this.previewFrame;
+        const currentLine = editor.getSelectionRange().start.row;
+        this.linesWithTag.map(line => {
+            const { id } = line;
 
-            if (regEx.test(line) && line) {
-                this.linesWithTag.push({
-                    lineValue: line,
-                    id: idx
-                });
-                const matchLine = regEx.exec(line);
-                // adding ids to every line with tags
-                line = `${matchLine[1]} id="${idx}"${matchLine[2]}`;
+            if (id === currentLine) {
+                this.targetElement = $(preview).contents().find( `#${id}`);
+                this.showToolTip(editor, currentLine + 1);
+
+                if (this.targetElement.position()) {
+                    this.getElementCoordinates(this.targetElement);
+                }
             }
-            return line;
-        });
+        })
+    },
 
-        preview.open();
-        preview.write(transformHtmlCode.join(''));
-        preview.close();
+    configLayerElement(styles, targetElement) {
+        const layerElement = document.createElement('div');
+        $(layerElement).css(styles);
+        $(layerElement).toggleClass('active-selection');
+        if ($(targetElement).parent()){
+            $(targetElement).parent().prepend(layerElement);
+        }
+        $(layerElement).animate({
+            opacity: 1
+        }, 700 );
+
+        this.scrollToElement(this.previewFrame, targetElement)
+    },
+
+    scrollToElement(preview, el) {
+        $(preview).contents().find('body').animate({
+            scrollTop: el.offset().top,
+            scrollLeft: el.offset().left
+        }, 1000);
     },
 
     getElementCoordinates(element) {
@@ -144,12 +159,11 @@ const HtmlacademyEditor = {
         const position = element.position();
         const width = element.width();
         const height = element.height();
-        const layer = document.createElement('div');
         const { top, left } = position;
         const styles = {
             position : "absolute",
-            top: top,
-            left: left,
+            top: top || 0,
+            left: left || 0,
             zIndex: 5,
             opacity: 0,
             width: width,
@@ -160,34 +174,7 @@ const HtmlacademyEditor = {
             transition: 'background .7s ease'
         };
 
-        $(layer).css(styles);
-        $(layer).toggleClass('active-selection')
-        $(element).parent().prepend(layer);
-        $(layer).animate({
-            opacity: 1
-        }, 700 );
-    },
-
-    scrollToElement(preview, el) {
-        $(preview).contents().find('body').animate({
-            scrollTop: el.offset().top,
-            scrollLeft: el.offset().left
-        }, 1500);
-    },
-
-    selectInPreview(editor) {
-        const preview = this.previewFrame;
-        const currentLine = editor.getSelectionRange().start.row;
-        this.linesWithTag.map(line => {
-            const { id } = line;
-            if (id === currentLine) {
-                const targetElement = $(preview).contents().find( `#${id}`)
-
-                this.showToolTip(editor, currentLine+1);
-                this.getElementCoordinates(targetElement);
-                this.scrollToElement(preview, targetElement);
-            }
-        })
+        this.configLayerElement(styles, element);
     },
 
     showToolTip (editor, tag) {
@@ -222,6 +209,13 @@ const HtmlacademyEditor = {
 
     },
 
+    hideToolTip(session) {
+        if (session.widgetManager) {
+            $('.tooltip-info').removeClass('tooltip-info__visible');
+            session.widgetManager.removeLineWidget(this.toolTip);
+        }
+    },
+
     setToolTipContent(container, tag) {
         $.getJSON('projects/barbershop/htmlbook.json?' + Math.random())
             .done(data => {
@@ -234,13 +228,6 @@ const HtmlacademyEditor = {
             .fail(() => {
                 container.innerHTML = 'Ошибка доступа к базе';
             });
-    },
-
-    hideToolTip(session) {
-        if (session.widgetManager) {
-            $('.tooltip-info').removeClass('tooltip-info__visible');
-            session.widgetManager.removeLineWidget(this.toolTip);
-        }
     },
 
     updatePagetitle() {
@@ -256,16 +243,27 @@ const HtmlacademyEditor = {
 
 const DemoController = {
     init() {
-        this.initZoom();
+        this.initZoom()
     },
     initZoom() {
         let self = this;
+
         $('.browser-zoom-toggle').click(function() {
             $('.browser-zoom-toggle').removeClass('browser-zoom-toggle-active');
             $(this).addClass('browser-zoom-toggle-active');
             self.switchZoom($(this).data().zoom);
+            self.recalculatePosition();
         });
-        this.switchZoom(100);
+        this.switchZoom(75);
+    },
+
+    recalculatePosition() {
+        const { targetElement, previewFrame} = HtmlacademyEditor;
+        $(previewFrame).contents().find('div.active-selection').remove();
+
+        if (targetElement.position()){
+            HtmlacademyEditor.getElementCoordinates(targetElement)
+        }
     },
 
     switchZoom(zoom) {
@@ -274,4 +272,4 @@ const DemoController = {
         });
         $('.browser__container').addClass('browser-zoom-' + zoom);
     }
-}
+};
