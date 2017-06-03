@@ -27,7 +27,7 @@ body {
   background-color: #000000;
 }
 
-.main-header h1 {
+ .main-header .logo {
   position: absolute;
   left: 50%;
   bottom: -264px;
