@@ -165,13 +165,12 @@ const HtmlacademyEditor = {
             top: top || 0,
             left: left || 0,
             zIndex: 5,
-            opacity: 0,
             width: width,
             height: height,
             margin: margin,
             padding: padding,
-            background: 'rgba(114,57,213, 0.4)',
-            transition: 'background .7s ease'
+            background: 'repeating-linear-gradient(120deg, rgba(0, 0, 0, 0.4) 0px, rgba(0, 0, 0, 0.4) 9px, rgba(255, 255, 0, 0.4) 10px, rgba(255, 255, 0, 0.4) 20px)',
+            boxShadow: '0 0 5px yellow'
         };
 
         this.configLayerElement(styles, element);
